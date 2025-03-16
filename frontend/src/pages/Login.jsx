@@ -24,7 +24,7 @@ const Login = () => {
         </Form>
 
         <p className="text-center mt-3">
-          Don't have an account? <Link to="/register">Register</Link>
+          Don't have an account? <Link to="/register" className="text-dark fw-bold text-decoration-none">Register</Link>
         </p>
       </Card>
     </Container>

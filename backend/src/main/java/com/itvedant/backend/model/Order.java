@@ -25,9 +25,31 @@ public class Order {
     private LocalDateTime orderDate = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status = Status.PENDING;
+    
+    private String customerName;
+    private String email;
+    private String phone;
+    
+    @Column(columnDefinition = "TEXT")
+    private String shippingAddress;
+    
+    @Column(columnDefinition = "TEXT")
+    private String billingAddress;
+    
+    private String paymentMethod;
+    
+    private double totalAmount;
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> items;
 
     public enum Status {
-        PENDING, SHIPPED, DELIVERED
+        PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
     }
+
+	public static Object builder() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
