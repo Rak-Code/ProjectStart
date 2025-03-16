@@ -22,4 +22,8 @@ public class ProductVariant {
     private String size;
     private String color;
     private int stockQuantity;
+	public int getId() {
+		// TODO Auto-generated method stub
+		return id;
+	}
 }

@@ -28,4 +28,9 @@ public class User {
     public enum Role {
         USER, ADMIN, SUPER_ADMIN
     }
+
+	public int getId() {
+		// TODO Auto-generated method stub
+		return id;
+	}
 }

@@ -28,13 +28,18 @@ const ProductList = () => {
         <p className="text-center">Loading products...</p>
       ) : (
         <Row xs={2} md={4} className="g-4">
-        {products.map((product) => ( // ✅ Fetch all products
-          <Col key={product.id}>
-            <ProductCard product={product} />
-          </Col>
-        ))}
-      </Row>
-      
+          {products && products.length > 0 ? (
+            products.map((product, index) => (
+              <Col key={index}>
+                <ProductCard product={product} />
+              </Col>
+            ))
+          ) : (
+            <Col xs={12}>
+              <p className="text-center">No products available.</p>
+            </Col>
+          )}
+        </Row>
       )}
     </Container>
   );

@@ -24,4 +24,25 @@ public class CartItem {
     private ProductVariant productVariant;
 
     private int quantity;
+
+	public User getUser() {
+		// TODO Auto-generated method stub
+		return user;
+	}
+
+	public ProductVariant getProductVariant() {
+		// TODO Auto-generated method stub
+		return productVariant;
+	}
+
+	public int getQuantity() {
+		// TODO Auto-generated method stub
+		return quantity;
+	}
+
+	public void setQuantity(int quantity) {
+		// TODO Auto-generated method stub
+		this.quantity = quantity;
+		
+	}
 }

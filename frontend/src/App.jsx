@@ -4,20 +4,24 @@ import NavigationBar from "./components/NavigationBar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import ProductDetail from "./pages/ProductDetail";  // ✅ Import ProductDetail
+import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
+import { CartProvider } from "./context/CartContext";
 
 const App = () => {
   return (
-    <Router>
-      <NavigationBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/cart" element={<h2>Cart Page</h2>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/product/:id" element={<ProductDetail />} />  {/* ✅ Add this route */}
-      </Routes>
-    </Router>
+    <CartProvider>
+      <Router>
+        <NavigationBar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+        </Routes>
+      </Router>
+    </CartProvider>
   );
 };
 

@@ -1,10 +1,13 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Navbar, Nav, Form, FormControl, Button, Container } from "react-bootstrap";
+import { Navbar, Nav, Form, FormControl, Button, Container, Badge } from "react-bootstrap";
 import { FaShoppingCart, FaUser } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useCart } from "../context/CartContext";
 
 const NavigationBar = () => {
+  const { cartCount } = useCart();
+
   return (
     <Navbar bg="light" expand="lg" className="shadow-sm">
       <Container>
@@ -29,9 +32,17 @@ const NavigationBar = () => {
           </Nav>
 
           <Nav>
-            {/* Cart Icon */}
-            <Nav.Link as={NavLink} to="/cart" className="d-flex align-items-center">
-              <FaShoppingCart size={20} className="me-1" /> Cart
+            {/* Cart Icon with Count */}
+            <Nav.Link as={NavLink} to="/cart" className="d-flex align-items-center position-relative">
+              <div className="position-relative">
+                <FaShoppingCart size={20} className="me-1" />
+                {cartCount > 0 && (
+                  <Badge pill bg="danger" className="position-absolute top-0 start-100 translate-middle">
+                    {cartCount}
+                  </Badge>
+                )}
+              </div>
+              <span className="ms-1">Cart</span>
             </Nav.Link>
 
             {/* Login/Register Button */}
