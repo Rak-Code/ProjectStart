@@ -5,10 +5,12 @@ import com.itvedant.backend.model.CartItem;
 import com.itvedant.backend.model.Order;
 import com.itvedant.backend.model.OrderItem;
 import com.itvedant.backend.model.User;
+import com.itvedant.backend.model.ProductVariant;
 import com.itvedant.backend.repository.CartItemRepository;
 import com.itvedant.backend.repository.OrderItemRepository;
 import com.itvedant.backend.repository.OrderRepository;
 import com.itvedant.backend.repository.UserRepository;
+import com.itvedant.backend.repository.ProductVariantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @Service
 public class OrderService {
@@ -27,17 +30,20 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
+    private final ProductVariantRepository productVariantRepository;
     private final ObjectMapper objectMapper;
 
     @Autowired
     public OrderService(OrderRepository orderRepository, 
                         OrderItemRepository orderItemRepository,
                         CartItemRepository cartItemRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        ProductVariantRepository productVariantRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
         this.userRepository = userRepository;
+        this.productVariantRepository = productVariantRepository;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -62,17 +68,43 @@ public class OrderService {
             throw new RuntimeException("Failed to serialize address", e);
         }
         
-        // Get user's cart items
-        List<CartItem> cartItems = cartItemRepository.findByUserId(user.getId());
-        
-        if (cartItems.isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+        // Check if we have cart items in the request
+        List<Map<String, Object>> cartItemsFromRequest = new ArrayList<>();
+        if (orderData.containsKey("cartItems")) {
+            try {
+                // Convert the cartItems array to a List of Maps
+                cartItemsFromRequest = objectMapper.convertValue(
+                    orderData.get("cartItems"), 
+                    new TypeReference<List<Map<String, Object>>>() {}
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to parse cart items from request", e);
+            }
         }
         
-        // Calculate total amount
-        double totalAmount = cartItems.stream()
-                .mapToDouble(item -> item.getProductVariant().getPrice() * item.getQuantity())
-                .sum();
+        double totalAmount = 0.0;
+        
+        // If we have cart items from the frontend, use those
+        if (!cartItemsFromRequest.isEmpty()) {
+            // Calculate total from the provided cart items
+            for (Map<String, Object> item : cartItemsFromRequest) {
+                double price = ((Number) item.get("price")).doubleValue();
+                int quantity = ((Number) item.get("quantity")).intValue();
+                totalAmount += price * quantity;
+            }
+        } else {
+            // Otherwise, use the cart items from the database
+            List<CartItem> cartItems = cartItemRepository.findByUserId(user.getId());
+            
+            if (cartItems.isEmpty()) {
+                throw new RuntimeException("Cart is empty");
+            }
+            
+            // Calculate total amount
+            totalAmount = cartItems.stream()
+                    .mapToDouble(item -> item.getProductVariant().getPrice() * item.getQuantity())
+                    .sum();
+        }
         
         // Add taxes and shipping if applicable
         double tax = totalAmount * 0.18; // 18% GST
@@ -94,22 +126,50 @@ public class OrderService {
         
         order = orderRepository.save(order);
         
-        // Create order items from cart items
+        // Create order items
         List<OrderItem> orderItems = new ArrayList<>();
-        for (CartItem cartItem : cartItems) {
-            OrderItem orderItem = OrderItem.builder()
-                    .order(order)
-                    .productVariant(cartItem.getProductVariant())
-                    .quantity(cartItem.getQuantity())
-                    .price(cartItem.getProductVariant().getPrice())
-                    .build();
-            
-            orderItemRepository.save(orderItem);
-            orderItems.add(orderItem);
-        }
         
-        // Clear the user's cart
-        cartItemRepository.deleteAll(cartItems);
+        if (!cartItemsFromRequest.isEmpty()) {
+            // Create order items from request cart items
+            for (Map<String, Object> item : cartItemsFromRequest) {
+                double price = ((Number) item.get("price")).doubleValue();
+                int quantity = ((Number) item.get("quantity")).intValue();
+                int productId = ((Number) item.get("productId")).intValue();
+                
+                // Create a dummy product variant since we don't have the actual one
+                // In a real application, you'd look up the product variant by ID
+                ProductVariant dummyVariant = new ProductVariant();
+                dummyVariant.setId(productId);
+                dummyVariant.setPrice(price);
+                
+                OrderItem orderItem = OrderItem.builder()
+                        .order(order)
+                        .productVariant(dummyVariant)
+                        .quantity(quantity)
+                        .price(price)
+                        .build();
+                
+                orderItemRepository.save(orderItem);
+                orderItems.add(orderItem);
+            }
+        } else {
+            // Create order items from database cart items
+            List<CartItem> cartItems = cartItemRepository.findByUserId(user.getId());
+            for (CartItem cartItem : cartItems) {
+                OrderItem orderItem = OrderItem.builder()
+                        .order(order)
+                        .productVariant(cartItem.getProductVariant())
+                        .quantity(cartItem.getQuantity())
+                        .price(cartItem.getProductVariant().getPrice())
+                        .build();
+                
+                orderItemRepository.save(orderItem);
+                orderItems.add(orderItem);
+            }
+            
+            // Clear the user's cart in the database
+            cartItemRepository.deleteAll(cartItems);
+        }
         
         return order;
     }

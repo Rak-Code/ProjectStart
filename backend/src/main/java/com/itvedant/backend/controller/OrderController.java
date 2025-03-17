@@ -1,6 +1,7 @@
 package com.itvedant.backend.controller;
 
 import com.itvedant.backend.model.Order;
+
 import com.itvedant.backend.model.OrderItem;
 import com.itvedant.backend.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,8 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class OrderController {
 
-    private final OrderService orderService;
+	@Autowired
+    private  OrderService orderService;
 
     @Autowired
     public OrderController(OrderService orderService) {
@@ -27,9 +29,16 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<Order> createOrder(@RequestBody Map<String, Object> orderData) {
         try {
+            // Add the cart array to the orderData for processing
+            if (!orderData.containsKey("cartItems")) {
+                // If cartItems is not provided, we'll use an empty array
+                orderData.put("cartItems", new Object[0]);
+            }
+            
             Order newOrder = orderService.createOrder(orderData);
             return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -25,4 +25,49 @@ public class OrderItem {
 
     private int quantity;
     private double price;
+    
+    // Manual Builder implementation
+    public static OrderItemBuilder builder() {
+        return new OrderItemBuilder();
+    }
+    
+    public static class OrderItemBuilder {
+        private int id;
+        private Order order;
+        private ProductVariant productVariant;
+        private int quantity;
+        private double price;
+        
+        OrderItemBuilder() {
+        }
+        
+        public OrderItemBuilder id(int id) {
+            this.id = id;
+            return this;
+        }
+        
+        public OrderItemBuilder order(Order order) {
+            this.order = order;
+            return this;
+        }
+        
+        public OrderItemBuilder productVariant(ProductVariant productVariant) {
+            this.productVariant = productVariant;
+            return this;
+        }
+        
+        public OrderItemBuilder quantity(int quantity) {
+            this.quantity = quantity;
+            return this;
+        }
+        
+        public OrderItemBuilder price(double price) {
+            this.price = price;
+            return this;
+        }
+        
+        public OrderItem build() {
+            return new OrderItem(id, order, productVariant, quantity, price);
+        }
+    }
 }

@@ -22,8 +22,18 @@ public class ProductVariant {
     private String size;
     private String color;
     private int stockQuantity;
+    private double price;
+    
 	public int getId() {
 		// TODO Auto-generated method stub
 		return id;
+	}
+	
+	public double getPrice() {
+		return price;
+	}
+	
+	public void setPrice(double price) {
+		this.price = price;
 	}
 }

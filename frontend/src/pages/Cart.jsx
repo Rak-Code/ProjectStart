@@ -1,11 +1,12 @@
 import React from "react";
 import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 
 const Cart = () => {
   const { cart, updateCartItem, removeFromCart } = useCart();
+  const navigate = useNavigate();
 
   const calculateSubtotal = () => {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -15,6 +16,10 @@ const Cart = () => {
     if (newQuantity > 0) {
       updateCartItem(id, newQuantity);
     }
+  };
+
+  const handleCheckout = () => {
+    navigate('/checkout');
   };
 
   if (cart.length === 0) {
@@ -128,7 +133,11 @@ const Cart = () => {
                 <span className="fw-bold">₹{calculateSubtotal()}</span>
               </div>
               
-              <Button variant="primary" className="w-100 py-2">
+              <Button 
+                variant="primary" 
+                className="w-100 py-2"
+                onClick={handleCheckout}
+              >
                 Proceed to Checkout
               </Button>
             </Card.Body>

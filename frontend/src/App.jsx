@@ -22,7 +22,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-confirmation" element={<OrderConfirmation />} />
+          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
         </Routes>
       </Router>
     </CartProvider>
